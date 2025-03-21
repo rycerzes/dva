@@ -98,7 +98,7 @@ class Exp_Model(object):
         total_mse = np.average(total_mse)
         return total_mse
 
-    def train(self, setting):
+    def train(self, setting, time_callback=None):
         train_data, train_loader = self._get_data(flag = 'train')
         vali_data, vali_loader = self._get_data(flag = 'val')
         test_data, test_loader = self._get_data(flag = 'test')
@@ -117,7 +117,7 @@ class Exp_Model(object):
             dsm = []
             all_loss = []
             self.denoise_net.train()
-            epoch_time = time.time()
+            epoch_start_time = time.time()
             for i, (batch_x, batch_y, x_mark, y_mark) in enumerate(train_loader):
                 t = torch.randint(0, self.diff_step, (self.args.batch_size,)).long().to(self.device)
                 batch_x = batch_x.float().to(self.device)
@@ -145,8 +145,14 @@ class Exp_Model(object):
             mse = np.average(mse)
             vali_mse = self.vali(vali_data, vali_loader, criterion)
 
-            print("Epoch: {0}, Steps: {1} | MSE Loss: {2:.7f} KL Loss: {3:.7f} DSM Loss: {4:.7f} Overall Loss:{5:.7f}".format(
-                epoch + 1, train_steps, mse, kl, dsm, all_loss))
+            epoch_time = time.time() - epoch_start_time
+            
+            print("Epoch: {0}, Steps: {1} | MSE Loss: {2:.7f} KL Loss: {3:.7f} DSM Loss: {4:.7f} Overall Loss:{5:.7f} | Time: {6:.2f}s".format(
+                epoch + 1, train_steps, mse, kl, dsm, all_loss, epoch_time))
+            
+            if time_callback is not None:
+                time_callback(epoch + 1, epoch_time)
+                
             early_stopping(vali_mse, self.denoise_net, path)
             if early_stopping.early_stop:
                 print("Early stopping")
