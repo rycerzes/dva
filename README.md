@@ -4,9 +4,14 @@ This repository contains the code for "Diffusion Variational Autoencoder for Tac
 
 ## Environment
 
-Python 3.8
+Python 3.12
 
-For the required dependencies, see `requirements.txt`.
+For the required dependencies, see [pyproject.toml](./pyproject.toml).
+
+#### Creating the env
+```bash
+uv pip install -e .
+``` 
 
 ## Run
 
